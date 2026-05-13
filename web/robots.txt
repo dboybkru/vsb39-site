@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /to/
+
+Sitemap: https://vsb39.ru/sitemap.xml

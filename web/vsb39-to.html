@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ВСБ39 ТО — Система технического обслуживания</title>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800;6..12,900&family=Roboto+Flex:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<style>
+:root{
+  --p:#53DBCA;--op:#003730;--pc:#005048;--opc:#76FBEA;
+  --s:#B1CCC8;--sc:#334B47;--osc:#CCE8E2;
+  --e:#FF5252;--ec:#3E0000;--warn:#FFD740;--warn-bg:#3E2600;
+  --ok:#69F0AE;--ok-bg:#0D3320;
+  --bg:#0B1211;--obg:#D2EEEB;
+  --sfv:#3F4947;--osfv:#BEC9C6;--ol:#566360;--olv:#3F4947;
+  --sfc:#131B1A;--sfch:#1A2220;--sfchh:#222B29;--sfcl:#111817;--sfcll:#0D1513;
+  --blue:#4D8ABA;--purple:#9B72EF;--orange:#F0A830;
+  --brand:"Nunito Sans",sans-serif;--plain:"Roboto Flex",sans-serif;
+  --r-s:8px;--r-m:12px;--r-l:16px;--r-xl:28px;--r-f:50px;
+  --e1:0 1px 2px rgba(0,0,0,.5),0 1px 3px 1px rgba(0,0,0,.3);
+  --e2:0 2px 4px rgba(0,0,0,.5),0 2px 8px 2px rgba(0,0,0,.3);
+  --e3:0 4px 12px rgba(0,0,0,.5),0 2px 4px rgba(0,0,0,.4);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--obg);font-family:var(--plain);font-size:14px;}
+.i{font-family:"Material Icons Round";font-size:24px;line-height:1;font-style:normal;display:inline-flex;align-items:center;user-select:none;vertical-align:middle;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--sfcl);}
+::-webkit-scrollbar-thumb{background:var(--sfv);border-radius:3px;}
+
+/* AUTH */
+#auth-screen{position:fixed;inset:0;z-index:1000;background:radial-gradient(ellipse at 30% 50%,#003D35 0%,#001A14 50%,#000D0A 100%);display:flex;align-items:center;justify-content:center;}
+.auth-glow{position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(83,219,202,.10) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
+.auth-box{position:relative;background:var(--sfc);border:1px solid var(--olv);border-radius:var(--r-xl);padding:40px;width:100%;max-width:420px;box-shadow:var(--e3);}
+.auth-logo{font-family:var(--brand);font-size:26px;font-weight:900;color:var(--p);display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.auth-sub{font-size:13px;color:var(--osfv);margin-bottom:28px;display:flex;align-items:center;gap:6px;}
+.fin{width:100%;background:var(--sfch);border:1.5px solid var(--olv);border-radius:var(--r-m);padding:12px 14px;font-size:15px;color:var(--obg);font-family:var(--plain);transition:border-color .2s;}
+.fin:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px color-mix(in srgb,var(--p) 15%,transparent);}
+.fld{margin-bottom:14px;}
+.f-lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--osfv);margin-bottom:5px;}
+.auth-err{font-size:13px;color:var(--e);background:var(--ec);border-radius:var(--r-s);padding:8px 12px;margin-bottom:12px;display:none;}
+.auth-demo{font-size:12px;color:var(--osfv);text-align:center;margin-top:12px;}
+.auth-demo span{color:var(--p);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:var(--r-f);font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:var(--plain);transition:box-shadow .15s,transform .15s;}
+.btn:hover{transform:translateY(-1px);}
+.btn.fill{background:var(--p);color:var(--op);}
+.btn.fill:hover{box-shadow:0 4px 16px rgba(83,219,202,.3);}
+.btn.tone{background:var(--sc);color:var(--osc);}
+.btn.out{background:transparent;border:1.5px solid var(--olv);color:var(--p);}
+.btn.txt{background:transparent;color:var(--p);padding:8px 12px;}
+.btn .i{font-size:18px;}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+/* APP SHELL */
+#app{display:none;height:100vh;flex-direction:column;}
+#app.on{display:flex;}
+
+/* TOP BAR */
+.topbar{height:56px;background:var(--sfch);border-bottom:1px solid var(--olv);display:flex;align-items:center;flex-shrink:0;}
+.tb-logo{font-family:var(--brand);font-size:18px;font-weight:900;color:var(--p);display:flex;align-items:center;gap:6px;padding:0 20px;border-right:1px solid var(--olv);height:100%;white-space:nowrap;flex-shrink:0;}
+.tb-logo .i{font-size:22px;}
+.tb-nav{display:flex;height:100%;overflow-x:auto;scrollbar-width:none;flex:1;}
+.tb-nav::-webkit-scrollbar{display:none;}
+.tn{height:56px;padding:0 14px;display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--osfv);border:none;background:none;cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .2s;font-family:var(--plain);}
+.tn .i{font-size:18px;}
+.tn:hover{background:color-mix(in srgb,var(--p) 8%,transparent);color:var(--p);}
+.tn.on{color:var(--p);border-bottom-color:var(--p);}
+.tn-b{background:var(--e);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:var(--r-f);margin-left:2px;}
+.tb-end{display:flex;align-items:center;gap:4px;padding:0 12px;margin-left:auto;border-left:1px solid var(--olv);height:100%;flex-shrink:0;}
+.ib{width:36px;height:36px;border-radius:var(--r-f);display:flex;align-items:center;justify-content:center;border:none;background:none;cursor:pointer;color:var(--osfv);transition:background .15s;}
+.ib:hover{background:color-mix(in srgb,var(--osfv) 12%,transparent);}
+.ib .i{font-size:20px;}
+.uchip{display:flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border-radius:var(--r-f);cursor:pointer;transition:background .15s;}
+.uchip:hover{background:var(--sfchh);}
+.uav{width:28px;height:28px;border-radius:50%;background:var(--p);color:var(--op);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;}
+.unm{font-size:13px;font-weight:600;}
+.urol{font-size:10px;color:var(--osfv);}
+
+/* LAYOUT */
+.body{display:flex;flex:1;overflow:hidden;}
+.sidebar{width:240px;flex-shrink:0;background:var(--sfcl);border-right:1px solid var(--olv);display:flex;flex-direction:column;overflow-y:auto;}
+.ns{padding:7px 14px 3px;font-size:10px;font-weight:700;letter-spacing:1.2px;color:var(--osfv);text-transform:uppercase;margin-top:6px;}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 14px;font-size:13px;font-weight:500;color:var(--osfv);cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:background .15s,color .15s;font-family:var(--plain);}
+.ni:hover{background:color-mix(in srgb,var(--p) 8%,transparent);color:var(--p);}
+.ni.on{background:var(--p);color:var(--op);border-radius:var(--r-f);margin:1px 8px;padding:9px 8px;width:calc(100% - 16px);font-weight:700;}
+.ni.on:hover{background:var(--p);}
+.ni .i{font-size:19px;}
+.ni-b{margin-left:auto;background:var(--e);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:var(--r-f);}
+.sf{padding:12px;border-top:1px solid var(--olv);margin-top:auto;}
+.main{flex:1;overflow-y:auto;}
+.page{display:none;padding:22px;}
+.page.on{display:block;}
+.ptop{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap;}
+.ptitle{font-family:var(--brand);font-size:20px;font-weight:800;}
+.pac{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin-bottom:18px;}
+.stat{background:var(--sfch);border-radius:var(--r-l);padding:14px 16px;border:1px solid var(--olv);position:relative;overflow:hidden;}
+.stat-t{position:absolute;top:0;left:0;right:0;height:3px;}
+.stat-v{font-family:var(--brand);font-size:30px;font-weight:900;line-height:1;margin:6px 0 3px;}
+.stat-l{font-size:11px;color:var(--osfv);font-weight:600;}
+.stat-s{font-size:11px;color:var(--osfv);margin-top:3px;}
+
+/* SEARCH */
+.fbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.sb{display:flex;align-items:center;gap:7px;background:var(--sfch);border-radius:var(--r-f);padding:0 14px;height:38px;border:1.5px solid var(--olv);transition:border-color .2s;}
+.sb:focus-within{border-color:var(--p);}
+.sb input{border:none;background:none;outline:none;font-size:14px;color:var(--obg);font-family:var(--plain);width:200px;}
+.sb input::placeholder{color:var(--osfv);}
+.sb .i{font-size:18px;color:var(--osfv);}
+.fsel{background:var(--sfch);border:1.5px solid var(--olv);border-radius:var(--r-s);padding:6px 10px;font-size:13px;color:var(--obg);font-family:var(--plain);}
+.fsel:focus{outline:none;border-color:var(--p);}
+
+/* TABLE */
+.tw{background:var(--sfch);border-radius:var(--r-l);border:1px solid var(--olv);overflow:hidden;overflow-x:auto;}
+.tw table{width:100%;border-collapse:collapse;min-width:600px;}
+.tw th{padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--osfv);background:var(--sfcl);text-align:left;border-bottom:1px solid var(--olv);}
+.tw td{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--olv);}
+.tw tr:last-child td{border-bottom:none;}
+.tw tr:hover td{background:color-mix(in srgb,var(--p) 5%,transparent);cursor:pointer;}
+.bx{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:4px;font-size:10px;font-weight:700;}
+.bx::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.8;}
+.ok{background:var(--ok-bg);color:var(--ok);}
+.wn{background:var(--warn-bg);color:var(--warn);}
+.er{background:var(--ec);color:var(--e);}
+.bl{background:#0a1f3a;color:#4d8aba;}
+.pu{background:#1a0a3a;color:#9b72ef;}
+.gr{background:#1a1a1a;color:#6b7280;}
+
+/* PANELS */
+.panel{background:var(--sfch);border-radius:var(--r-l);border:1px solid var(--olv);padding:18px;margin-bottom:14px;}
+.panel h3{font-weight:700;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.panel h3 .i{color:var(--p);font-size:19px;}
+.p2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.kv-k{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--osfv);margin-bottom:3px;}
+.kv-v{font-size:14px;margin-bottom:10px;}
+
+/* CHECKLIST */
+.chki{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:var(--r-s);cursor:pointer;transition:background .15s;}
+.chki:hover{background:var(--sfchh);}
+.chki input{width:16px;height:16px;accent-color:var(--p);cursor:pointer;flex-shrink:0;margin-top:2px;}
+.chki label{font-size:13px;cursor:pointer;line-height:1.4;}
+.chki.done label{text-decoration:line-through;color:var(--osfv);}
+.chk-prog{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.chk-bar{flex:1;height:6px;background:var(--sfchh);border-radius:3px;overflow:hidden;}
+.chk-fill{height:100%;background:var(--p);border-radius:3px;transition:width .3s;}
+
+/* JOURNAL FORM */
+.jform{background:var(--sfcl);border-radius:var(--r-l);border:1px solid var(--olv);overflow:hidden;}
+.jfsec{padding:18px;border-bottom:1px solid var(--olv);}
+.jfsec:last-child{border-bottom:none;}
+.jfsec h4{font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--osfv);margin-bottom:12px;}
+
+/* MODAL */
+.mbg{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.65);align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.mbg.on{display:flex;}
+.modal{background:var(--sfch);border:1px solid var(--olv);border-radius:var(--r-xl);padding:28px;max-width:600px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:var(--e3);}
+.mhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.mtitle{font-family:var(--brand);font-size:17px;font-weight:800;display:flex;align-items:center;gap:7px;}
+.mfld{margin-bottom:13px;}
+.mfld label{display:block;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--osfv);margin-bottom:5px;}
+.mft{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--olv);}
+
+/* BAR CHART HELPER */
+.brow{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.bval{font-size:12px;font-weight:700;min-width:28px;text-align:right;}
+.bbar{flex:1;height:18px;background:var(--sfchh);border-radius:3px;overflow:hidden;}
+.bfill{height:100%;border-radius:3px;transition:width .4s;}
+
+/* RESPONSIVE */
+@media(max-width:820px){.sidebar{display:none;}.p2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div id="auth-screen">
+  <div class="auth-glow"></div>
+  <div class="auth-box">
+    <div class="auth-logo"><span class="i">engineering</span>ВСБ39 ТО</div>
+    <div class="auth-sub"><span class="i" style="font-size:16px">lock</span>Система технического обслуживания ТСО</div>
+    <div id="aerr" class="auth-err">Неверный логин или пароль</div>
+    <div class="fld"><label class="f-lbl">Email</label><input type="email" class="fin" id="li-e" value="" autocomplete="username"/></div>
+    <div class="fld"><label class="f-lbl">Пароль</label><input type="password" class="fin" id="li-p" value="" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"/></div>
+    <button class="btn fill" style="width:100%;justify-content:center" onclick="login()"><span class="i">login</span>Войти в систему</button>
+    <div class="auth-demo">Введите корпоративный email и пароль</div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--olv);text-align:center">
+      <a href="vsb39_public.html" style="font-size:12px;color:var(--osfv);text-decoration:none;display:inline-flex;align-items:center;gap:4px">
+        <span class="i" style="font-size:15px">arrow_back</span>На сайт ВСБ39
+      </a>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="tb-logo"><span class="i">engineering</span>ВСБ39 ТО</div>
+    <div class="tb-nav">
+      <button class="tn on" onclick="nav('dash')"><span class="i">dashboard</span>Сводка</button>
+      <button class="tn" onclick="nav('obj')"><span class="i">location_city</span>Объекты</button>
+      <button class="tn" onclick="nav('tck')"><span class="i">assignment</span>Заявки <span class="tn-b" id="tck-cnt">4</span></button>
+      <button class="tn" onclick="nav('jnl')"><span class="i">menu_book</span>Журналы</button>
+      <button class="tn" onclick="nav('sch')"><span class="i">calendar_month</span>Расписание</button>
+      <button class="tn" onclick="nav('rep')"><span class="i">bar_chart</span>Отчёты</button>
+      <button class="tn admin-el" style="display:none" onclick="nav('usr')"><span class="i">people</span>Пользователи</button>
+      <button class="tn admin-el" style="display:none" onclick="nav('cfg')"><span class="i">settings</span>Настройки</button>
+    </div>
+    <div class="tb-end">
+      <button class="ib"><span class="i">notifications</span></button>
+      <div class="uchip" onclick="logout()">
+        <div class="uav" id="uav">АС</div>
+        <div><div class="unm" id="unm">—</div><div class="urol" id="urol">—</div></div>
+        <span class="i" style="font-size:15px;color:var(--osfv);margin-left:3px">logout</span>
+      </div>
+    </div>
+  </div>
+  <div class="body">
+    <nav class="sidebar">
+      <div class="ns">Рабочее место</div>
+      <button class="ni on" onclick="nav('dash')"><span class="i">dashboard</span>Сводка</button>
+      <button class="ni" onclick="nav('obj')"><span class="i">location_city</span>Объекты</button>
+      <button class="ni" onclick="nav('tck')"><span class="i">assignment</span>Заявки <span class="ni-b" id="sb-tck-b">4</span></button>
+      <div class="ns">Документация</div>
+      <button class="ni" onclick="nav('jnl')"><span class="i">menu_book</span>Журналы ТО</button>
+      <button class="ni" onclick="nav('sch')"><span class="i">calendar_month</span>Расписание</button>
+      <div class="ns">Аналитика</div>
+      <button class="ni" onclick="nav('rep')"><span class="i">bar_chart</span>Отчёты</button>
+      <div class="ns admin-el" style="display:none">Администрирование</div>
+      <button class="ni admin-el" style="display:none" onclick="nav('usr')"><span class="i">people</span>Пользователи</button>
+      <button class="ni admin-el" style="display:none" onclick="nav('cfg')"><span class="i">settings</span>Настройки</button>
+      <div class="sf">
+        <button class="btn out" style="width:100%;justify-content:center;font-size:13px" onclick="logout()"><span class="i">logout</span>Выйти</button>
+      </div>
+    </nav>
+    <main class="main">
+      <!-- DASHBOARD -->
+      <div id="p-dash" class="page on">
+        <div class="ptop">
+          <div class="ptitle">Панель управления ТО</div>
+          <div class="pac">
+            <button class="btn tone" style="padding:7px 14px;font-size:13px" onclick="initDash()"><span class="i">refresh</span>Обновить</button>
+            <button class="btn fill" onclick="nav('tck');openNewTicket()"><span class="i">add</span>Новая заявка</button>
+          </div>
+        </div>
+        <div class="stats" id="dash-stats"></div>
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start">
+          <div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span class="i" style="font-size:17px;color:var(--p)">bolt</span>Активные события</div>
+            <div class="tw" id="dash-events"></div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span class="i" style="font-size:17px;color:var(--p)">today</span>На сегодня</div>
+            <div class="panel" style="padding:0" id="dash-today"></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+          <div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span class="i" style="font-size:17px;color:var(--warn)">priority_high</span>Критичные заявки</div>
+            <div class="tw" id="dash-crit"></div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span class="i" style="font-size:17px;color:var(--ok)">check_circle</span>Последние ТО</div>
+            <div class="tw" id="dash-done"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OBJECTS -->
+      <div id="p-obj" class="page">
+        <div class="ptop">
+          <div class="ptitle">Объекты (<span id="obj-total">0</span>)</div>
+          <div class="pac">
+            <div class="sb"><span class="i">search</span><input type="text" id="obj-q" placeholder="Поиск объектов, адресов…" oninput="filterObj()"/></div>
+            <select class="fsel" id="obj-sys" onchange="filterObj()">
+              <option value="">Все системы</option>
+              <option>ОС</option><option>ОТС</option><option>ОС/ОТС</option><option>СКУД</option><option>СКУД, ОС/ОТС</option>
+            </select>
+            <select class="fsel" id="obj-st" onchange="filterObj()">
+              <option value="">Все статусы</option>
+              <option value="ok">В норме</option>
+              <option value="warn">Требует ТО</option>
+              <option value="err">Неисправность</option>
+            </select>
+            <button class="btn tone" style="padding:7px 14px;font-size:13px" onclick="exportCSV()"><span class="i">download</span>CSV</button>
+          </div>
+        </div>
+        <div class="tw" id="obj-table"></div>
+      </div>
+
+      <!-- OBJECT DETAIL -->
+      <div id="p-objdet" class="page">
+        <div class="ptop">
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="btn txt" onclick="nav('obj')" style="padding:6px 10px"><span class="i">arrow_back</span></button>
+            <div class="ptitle" id="det-title">—</div>
+          </div>
+          <div class="pac">
+            <button class="btn tone" onclick="startTOdet()"><span class="i">build</span>Провести ТО</button>
+            <button class="btn fill" onclick="openNewTicket()"><span class="i">add</span>Заявка</button>
+          </div>
+        </div>
+        <div id="det-body"></div>
+      </div>
+
+      <!-- TICKETS -->
+      <div id="p-tck" class="page">
+        <div class="ptop">
+          <div class="ptitle">Заявки</div>
+          <div class="pac">
+            <div class="sb"><span class="i">search</span><input type="text" id="tck-q" placeholder="Поиск…" oninput="filterTck()"/></div>
+            <select class="fsel" id="tck-pr" onchange="filterTck()">
+              <option value="">Все приоритеты</option>
+              <option value="crit">Критичный</option><option value="high">Высокий</option>
+              <option value="med">Средний</option><option value="low">Низкий</option>
+            </select>
+            <select class="fsel" id="tck-st" onchange="filterTck()">
+              <option value="">Все статусы</option>
+              <option value="new">Новая</option><option value="open">Открыта</option>
+              <option value="prog">В работе</option><option value="done">Закрыта</option>
+            </select>
+            <button class="btn fill" onclick="openNewTicket()"><span class="i">add</span>Новая заявка</button>
+          </div>
+        </div>
+        <div class="tw" id="tck-table"></div>
+      </div>
+
+      <!-- JOURNALS LIST -->
+      <div id="p-jnl" class="page">
+        <div class="ptop">
+          <div class="ptitle">Журналы ТО</div>
+          <div class="pac">
+            <div class="sb"><span class="i">search</span><input type="text" id="jnl-q" placeholder="Поиск…" oninput="filterJnl()"/></div>
+            <select class="fsel" id="jnl-sys" onchange="filterJnl()">
+              <option value="">Все системы</option>
+              <option>ОС/ОТС</option><option>СКУД</option><option>СКУД, ОС</option><option>СКУД, ОС/ОТС</option>
+            </select>
+            <button class="btn tone" style="padding:7px 14px;font-size:13px" onclick="exportCSV()"><span class="i">download</span>Экспорт</button>
+            <button class="btn fill" onclick="openNewJnl()"><span class="i">add</span>Новая запись</button>
+          </div>
+        </div>
+        <div class="tw" id="jnl-table"></div>
+      </div>
+
+      <!-- JOURNAL FORM -->
+      <div id="p-jnlform" class="page">
+        <div class="ptop">
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="btn txt" onclick="nav('jnl')" style="padding:6px 10px"><span class="i">arrow_back</span></button>
+            <div class="ptitle">Провести ТО — Регламент №1</div>
+          </div>
+        </div>
+        <div id="jnl-form-body"></div>
+      </div>
+
+      <!-- SCHEDULE -->
+      <div id="p-sch" class="page">
+        <div class="ptop">
+          <div class="ptitle">Расписание ТО — Май 2025</div>
+          <div class="pac">
+            <button class="btn tone" style="padding:7px 14px;font-size:13px" onclick="exportCSV()"><span class="i">download</span>Экспорт</button>
+            <button class="btn fill"><span class="i">add</span>Добавить в план</button>
+          </div>
+        </div>
+        <div class="stats" id="sch-stats"></div>
+        <div class="tw" id="sch-table"></div>
+      </div>
+
+      <!-- REPORTS -->
+      <div id="p-rep" class="page">
+        <div class="ptop"><div class="ptitle">Отчёты</div></div>
+        <div class="p2">
+          <div class="panel"><h3><span class="i">pie_chart</span>Статусы объектов</h3><div id="rep-st"></div></div>
+          <div class="panel"><h3><span class="i">trending_up</span>ТО по месяцам 2025</h3><div id="rep-mon"></div></div>
+          <div class="panel"><h3><span class="i">people</span>Загрузка монтажников</h3><div id="rep-tch"></div></div>
+          <div class="panel"><h3><span class="i">location_on</span>Объекты по районам</h3><div id="rep-reg"></div></div>
+        </div>
+      </div>
+
+      <!-- USERS ADMIN -->
+      <div id="p-usr" class="page">
+        <div class="ptop">
+          <div class="ptitle">Пользователи</div>
+          <button class="btn fill"><span class="i">person_add</span>Добавить</button>
+        </div>
+        <div class="p2">
+          <div class="tw" id="usr-table"></div>
+          <div class="panel"><h3><span class="i">admin_panel_settings</span>Роли и права</h3>
+            <div style="font-size:13px">
+              <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--olv)"><strong>ADMIN</strong><span class="bx ok">Полный доступ</span></div>
+              <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--olv)"><strong>MANAGER</strong><span class="bx bl">Все объекты, заявки, журналы</span></div>
+              <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--olv)"><strong>DISPATCHER</strong><span class="bx bl">Заявки, расписание</span></div>
+              <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--olv)"><strong>TECHNICIAN</strong><span class="bx">Свои объекты, журналы</span></div>
+              <div style="display:flex;justify-content:space-between;padding:9px 0"><strong>CUSTOMER</strong><span class="bx gr">Только чтение</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS ADMIN -->
+      <div id="p-cfg" class="page">
+        <div class="ptop"><div class="ptitle">Настройки системы</div></div>
+        <div class="p2">
+          <div class="panel"><h3><span class="i">api</span>Подключение к бэкенду</h3>
+            <div class="mfld"><label>API Base URL</label><input class="fin" value="https://to.vsb39.ru/api/v1" style="margin-top:4px"/></div>
+            <button class="btn fill" style="margin-top:10px"><span class="i">check_circle</span>Проверить соединение</button>
+          </div>
+          <div class="panel"><h3><span class="i">smart_toy</span>AI-ассистент (ВсеГПТ)</h3>
+            <div class="mfld"><label>API Endpoint</label><input class="fin" value="https://api.vsegpt.ru/v1" style="margin-top:4px"/></div>
+            <div class="mfld" style="margin-top:9px"><label>API Key</label><input class="fin" type="password" value="" placeholder="sk-xxxxxxxx" style="margin-top:4px"/></div>
+            <div class="mfld" style="margin-top:9px"><label>Модель</label>
+              <select class="fin" style="margin-top:4px"><option>openai/gpt-4o</option><option>anthropic/claude-sonnet-4-20250514</option></select>
+            </div>
+            <button class="btn tone" style="margin-top:10px"><span class="i">save</span>Сохранить</button>
+          </div>
+          <div class="panel"><h3><span class="i">notifications</span>Уведомления</h3>
+            <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" checked style="accent-color:var(--p);width:16px;height:16px"/>Email при критичных заявках</label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" checked style="accent-color:var(--p);width:16px;height:16px"/>Telegram при аварийном вызове</label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" style="accent-color:var(--p);width:16px;height:16px"/>SMS при просроченных ТО</label>
+            </div>
+            <button class="btn tone" style="margin-top:12px"><span class="i">save</span>Сохранить</button>
+          </div>
+          <div class="panel"><h3><span class="i">backup</span>Резервное копирование</h3>
+            <p style="font-size:13px;color:var(--osfv);margin-bottom:12px">Последний: <strong style="color:var(--obg)">12.05.2025 03:00</strong></p>
+            <button class="btn fill" style="width:100%;justify-content:center;margin-bottom:8px"><span class="i">backup</span>Создать бэкап</button>
+            <button class="btn out" style="width:100%;justify-content:center"><span class="i">restore</span>Восстановить</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- NEW TICKET MODAL -->
+<div class="mbg" id="m-tck" onclick="closeMod(this,event)">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mtitle"><span class="i">add_task</span>Новая заявка</div>
+      <button class="btn txt" onclick="document.getElementById('m-tck').classList.remove('on')"><span class="i">close</span></button>
+    </div>
+    <div class="mfld"><label>Объект *</label><select class="fin" id="nt-obj" style="margin-top:4px"><option value="">— Выберите —</option></select></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="mfld"><label>Приоритет</label>
+        <select class="fin" id="nt-pr" style="margin-top:4px">
+          <option value="crit">🔴 Критичный</option>
+          <option value="high">🟠 Высокий</option>
+          <option value="med" selected>🔵 Средний</option>
+          <option value="low">🟢 Низкий</option>
+        </select>
+      </div>
+      <div class="mfld"><label>Тип</label>
+        <select class="fin" id="nt-type" style="margin-top:4px">
+          <option>Оборудование</option><option>ПО</option><option>Питание</option>
+          <option>Датчики</option><option>Кабельные линии</option><option>Прочее</option>
+        </select>
+      </div>
+    </div>
+    <div class="mfld"><label>Описание *</label><textarea class="fin" id="nt-desc" rows="3" placeholder="Опишите неисправность…" style="resize:vertical;margin-top:4px"></textarea></div>
+    <div class="mfld"><label>Исполнитель</label><select class="fin" id="nt-usr" style="margin-top:4px"><option value="">— Не назначен —</option></select></div>
+    <div class="mft">
+      <button class="btn txt" onclick="document.getElementById('m-tck').classList.remove('on')">Отмена</button>
+      <button class="btn fill" onclick="submitTicket()"><span class="i">check</span>Создать заявку</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const USERS=[
+  {id:1,nm:"Алексей Смирнов",role:"ADMIN",email:"admin@vsb39.ru",hash:"d9e70912",init:"АС"},
+  {id:2,nm:"Иван Петров",role:"TECHNICIAN",email:"tech@vsb39.ru",hash:"2d95502d",init:"ИП"},
+  {id:3,nm:"Марина Сидорова",role:"MANAGER",email:"manager@vsb39.ru",hash:"9cc60ccf",init:"МС"},
+  {id:4,nm:"Сергей Горбачевский",role:"CUSTOMER",email:"customer@rt.ru",hash:"9080e428",init:"СГ"},
+];
+const OBJS=[
+  {id:"ОБЖ-001",nm:"Объект «Гаражи» ТУ №2",addr:"г. Черняховск, ул. Дачная, 30А",sys:"ОС/ОТС",reg:"г. Черняховск",st:"ok",dt:"15.05.25"},
+  {id:"ОБЖ-002",nm:"ОПТС-6 / ул. Багратиона 111",addr:"г. Калининград, ул. Багратиона, 111",sys:"СКУД, ОС/ОТС",reg:"г. Калининград",st:"ok",dt:"10.05.25"},
+  {id:"ОБЖ-003",nm:"ТУ №2 Советск",addr:"г. Советск, ул. А. Невского, 28б",sys:"ОС/ОТС",reg:"г. Советск",st:"warn",dt:"20.05.25"},
+  {id:"ОБЖ-004",nm:"АТС г. Зеленоградск",addr:"г. Зеленоградск, ул. Лермонтова, 12",sys:"ОС/ОТС, СКУД",reg:"г. Зеленоградск",st:"warn",dt:"08.05.25"},
+  {id:"ОБЖ-005",nm:"АТС г. Гусев",addr:"г. Гусев, ул. Тимирязева, 5",sys:"СКУД, ОС/ОТС",reg:"г. Гусев",st:"ok",dt:"25.05.25"},
+  {id:"ОБЖ-006",nm:"АТС г. Балтийск",addr:"г. Балтийск, ул. Ленина, 61",sys:"СКУД",reg:"г. Балтийск",st:"err",dt:"18.05.25"},
+  {id:"ОБЖ-007",nm:"ПС 95/3 «Дунайская»",addr:"г. Калининград, ул. Дунайская, 16",sys:"ОС",reg:"г. Калининград",st:"ok",dt:"22.05.25"},
+  {id:"ОБЖ-008",nm:"Административное здание",addr:"г. Калининград, Ленинский пр-кт, 32",sys:"СКУД",reg:"г. Калининград",st:"err",dt:"12.05.25"},
+  {id:"ОБЖ-009",nm:"АТС г. Советск",addr:"г. Советск, ул. Победы, 12",sys:"ОС/ОТС, СКУД",reg:"г. Советск",st:"warn",dt:"30.05.25"},
+  {id:"ОБЖ-010",nm:"АТС г. Светлый",addr:"г. Светлый, ул. Горького, 18",sys:"СКУД",reg:"г. Светлый",st:"ok",dt:"05.06.25"},
+  {id:"ОБЖ-011",nm:"РРС «Советский» пр-т",addr:"г. Калининград, Советский пр-т, 40А",sys:"ОС",reg:"г. Калининград",st:"ok",dt:"18.05.25"},
+  {id:"ОБЖ-012",nm:"АТС г. Нестеров",addr:"г. Нестеров, ул. Калинина, 13",sys:"СКУД",reg:"г. Нестеров",st:"ok",dt:"14.05.25"},
+];
+const TICKETS=[
+  {id:"ЗВ-001",obj:"ОБЖ-006",pr:"crit",desc:"Не работает считыватель КМСД у центрального входа",type:"Оборудование",src:"manual",uid:2,st:"open",dt:"12.05.25 09:41"},
+  {id:"ЗВ-002",obj:"ОБЖ-008",pr:"crit",desc:"Потеря связи с контроллером С2000-М, тревожная зона Б",type:"Оборудование",src:"voice_bot",uid:1,st:"open",dt:"12.05.25 08:15"},
+  {id:"ЗВ-003",obj:"ОБЖ-003",pr:"high",desc:"Замена аккумулятора РИП-12 (ниже нормы 10.8В)",type:"Питание",src:"journal_auto",uid:2,st:"prog",dt:"11.05.25 14:00"},
+  {id:"ЗВ-004",obj:"ОБЖ-004",pr:"high",desc:"Ложные срабатывания ИК-извещателей Фотон-10 зона 3",type:"Датчики",src:"manual",uid:2,st:"prog",dt:"10.05.25 11:20"},
+  {id:"ЗВ-005",obj:"ОБЖ-007",pr:"med",desc:"Плановое ТО — Регламент №1 ОС",type:"Прочее",src:"manual",uid:null,st:"new",dt:"09.05.25 09:00"},
+  {id:"ЗВ-006",obj:"ОБЖ-005",pr:"low",desc:"Настройка зон ИСО «Орион Про», добавление нового шлейфа",type:"ПО",src:"manual",uid:2,st:"done",dt:"08.05.25 15:30"},
+  {id:"ЗВ-007",obj:"ОБЖ-009",pr:"med",desc:"Плановое ТО — Регламент №1 СКУД",type:"Прочее",src:"manual",uid:3,st:"prog",dt:"07.05.25 10:00"},
+];
+const JOURNALS=[
+  {id:"ЖУ-001",dt:"11.05.25",obj:"ОБЖ-005",sys:"СКУД, ОС",res:"Система исправна. Проведены все работы по Регламенту №1. Сдана в работоспособном состоянии.",uid:2,signed:true},
+  {id:"ЖУ-002",dt:"10.05.25",obj:"ОБЖ-002",sys:"ОС/ОТС",res:"ТО выполнено. Заменён предохранитель РИП. Проверены все датчики.",uid:3,signed:true},
+  {id:"ЖУ-003",dt:"09.05.25",obj:"ОБЖ-004",sys:"СКУД",res:"Обслуживание АРМ СКУД. Базы данных архивированы. Дефрагментация диска.",uid:1,signed:false},
+  {id:"ЖУ-004",dt:"08.05.25",obj:"ОБЖ-009",sys:"ОС/ОТС, СКУД",res:"Плановое ТО выполнено, замечаний нет.",uid:2,signed:true},
+  {id:"ЖУ-005",dt:"07.05.25",obj:"ОБЖ-010",sys:"СКУД",res:"Чистка и диагностика контроллеров. Проверка считывателей.",uid:2,signed:true},
+];
+const SCHEDULE=[
+  {dt:"12.05.25",obj:"ОБЖ-004",wk:"Регламент №1 СКУД+ОС",uid:2,st:"done"},
+  {dt:"12.05.25",obj:"ОБЖ-007",wk:"Регламент №1 ОС",uid:3,st:"done"},
+  {dt:"13.05.25",obj:"ОБЖ-009",wk:"Регламент №1 СКУД",uid:1,st:"warn"},
+  {dt:"14.05.25",obj:"ОБЖ-003",wk:"Регламент №1 ОС/ОТС",uid:2,st:"warn"},
+  {dt:"15.05.25",obj:"ОБЖ-001",wk:"Регламент №1 ОС/ОТС",uid:2,st:"ok"},
+  {dt:"16.05.25",obj:"ОБЖ-002",wk:"Регламент №1 СКУД+ОС",uid:1,st:"warn"},
+  {dt:"18.05.25",obj:"ОБЖ-006",wk:"Регламент №1 СКУД (после ремонта)",uid:2,st:"warn"},
+  {dt:"20.05.25",obj:"ОБЖ-011",wk:"Регламент №1 ОС",uid:3,st:"ok"},
+];
+const CL_OS=["Внешний осмотр ПКП — повреждения, загрязнения, коррозия","Разборка корпуса ПКП, внутренний осмотр, удаление пыли","Протирка спиртовым раствором коммутационных разъёмов ПКП","Проверка режима программирования и правильности настроек ПКП","Проверка работы ПКП без основного питания (от АКБ)","Проверка и измерение параметров БРП/РИП — входное/выходное напряжение","Проверка аккумуляторов: напряжение, состояние клемм","Проверка пульта С2000-М — работа во всех режимах","Проверка ИК-датчиков Фотон/Аргус/Астра — осмотр, очистка, тест","Проверка магнитоконтактных извещателей ИО-102","Проверка кабельных линий ДПЛС и шлейфов сигнализации","Тест связи с ПЦН (пультом централизованного наблюдения)","Проверка ОТС — тревожная кнопка, тест вызова","Проверка сети передачи данных и связи с сервером","Архивирование событий, снятие данных по сбоям","Запись в журнал ТО с подписью представителя заказчика"];
+const CL_SKUD=["Обслуживание АРМ СКУД — внешний осмотр, очистка внутренних объёмов от пыли","Чистка контактов и разъёмов АРМ, смазка механических элементов","Настройка и поддержка системного и специального ПО СКУД","Тестирование, дефрагментация диска, освобождение места на ЖД","Проверка ОС АРМ, антивирус, архивирование событий","Обслуживание сервера ПАК «БОЛИД» — очистка, чистка разъёмов","Проверка СУБД сервера, корректировка базы данных СКУД","Внешний осмотр контроллера СКУД — повреждения, коррозия, загрязнения","Проверка питания контроллера (входного, выходного каскадов)","Проверка сетевых настроек контроллера, связи с сервером","Проверка управления контроллером, режима программирования","Проверка работы контроллера без основного питания (АКБ)","Внешний осмотр считывателя КМСД — повреждения, загрязнения","Проверка питания считывателя, связи с контроллером по ДПЛС","Проверка управления считывателем, сенсора стеклянной призмы","Проверка связи с ЛВС, тест доступа по карте/браслету"];
+
+// STATE
+let me=null, curPage="dash", selObjId=null, chkState={}, curChkList=[];
+
+// HELPERS
+const uNm=uid=>{const u=USERS.find(x=>x.id===uid);return u?u.nm:"Не назначен";};
+const oNm=id=>{const o=OBJS.find(x=>x.id===id);return o?o.nm:"—";};
+const oAd=id=>{const o=OBJS.find(x=>x.id===id);return o?o.addr:"";};
+const oBx={ok:'<span class="bx ok">В норме</span>',warn:'<span class="bx wn">Требует ТО</span>',err:'<span class="bx er">Неисправность</span>'};
+const pBx={crit:'<span class="bx er">КРИТИЧНЫЙ</span>',high:'<span class="bx wn">ВЫСОКИЙ</span>',med:'<span class="bx bl">СРЕДНИЙ</span>',low:'<span class="bx ok">НИЗКИЙ</span>'};
+const sBx={new:'<span class="bx pu">Новая</span>',open:'<span class="bx er">Открыта</span>',prog:'<span class="bx wn">В работе</span>',done:'<span class="bx ok">Закрыта</span>'};
+const srcBx={manual:'<span class="bx bl">🤚 Вручную</span>',voice_bot:'<span class="bx pu">🤖 Робот</span>',journal_auto:'<span class="bx ok">⚡ Авто</span>'};
+
+// AUTH
+function toast(msg,type='info'){
+  const el=document.createElement('div');
+  const bg={info:'#1A2220',success:'#0D3320',error:'#3E0000'};
+  const tc={info:'#B1CCC8',success:'#69F0AE',error:'#FF5252'};
+  el.style.cssText=`position:fixed;bottom:24px;right:24px;z-index:9999;background:${bg[type]};color:${tc[type]};border:1px solid var(--olv);border-radius:var(--r-l);padding:12px 20px;font-size:14px;font-weight:600;box-shadow:var(--e3);max-width:380px;line-height:1.5;font-family:var(--plain)`;
+  el.textContent=msg;
+  document.body.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},3500);
+}
+
+
+function simpleHash(str){
+  let h=5381;
+  for(let i=0;i<str.length;i++)h=((h<<5)+h+str.charCodeAt(i))>>>0;
+  return h.toString(16).padStart(8,'0');
+}
+function login(){
+  const e=document.getElementById("li-e").value.trim();
+  const p=document.getElementById("li-p").value;
+  const u=USERS.find(x=>x.email===e&&simpleHash(p)===x.hash);
+  const err=document.getElementById("aerr");
+  if(!u){err.style.display="block";return;}
+  err.style.display="none"; me=u;
+  document.getElementById("auth-screen").style.display="none";
+  document.getElementById("app").classList.add("on");
+  document.getElementById("uav").textContent=u.init;
+  document.getElementById("unm").textContent=u.nm;
+  document.getElementById("urol").textContent=u.role;
+  if(u.role==="ADMIN"){document.querySelectorAll(".admin-el").forEach(el=>el.style.display="");}
+  const os=document.getElementById("nt-obj");
+  os.innerHTML='<option value="">— Выберите —</option>'+OBJS.map(o=>`<option value="${o.id}">${o.nm}</option>`).join("");
+  const us=document.getElementById("nt-usr");
+  us.innerHTML='<option value="">— Не назначен —</option>'+USERS.filter(x=>["TECHNICIAN","MANAGER"].includes(x.role)).map(u=>`<option value="${u.id}">${u.nm}</option>`).join("");
+  const open=TICKETS.filter(t=>t.st==="open"||t.st==="new").length;
+  document.getElementById("tck-cnt").textContent=open;
+  document.getElementById("sb-tck-b").textContent=open;
+  initDash(); initObj(); initTck(); initJnl(); initSch(); initRep();
+  if(u.role==="ADMIN")initUsr();
+  nav("dash");
+}
+function logout(){if(confirm("Выйти из системы?"))location.reload();}
+
+// NAV
+function nav(p){
+  curPage=p;
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));
+  document.querySelectorAll(".ni,.tn").forEach(x=>x.classList.remove("on"));
+  const pg=document.getElementById("p-"+p);if(pg)pg.classList.add("on");
+  document.querySelectorAll(".ni,.tn").forEach(b=>{if(b.onclick&&b.onclick.toString().includes("'"+p+"'"))b.classList.add("on");});
+}
+function closeMod(bg,e){if(!e||e.target===bg)bg.classList.remove("on");}
+function exportCSV(){toast("Экспорт: GET /api/"+curPage+"/export.csv — подключите бэкенд TO_Claude_Kimi");}
+
+// DASHBOARD
+function initDash(){
+  const open=TICKETS.filter(t=>t.st==="open"||t.st==="new").length;
+  const crit=TICKETS.filter(t=>t.pr==="crit"&&t.st!=="done").length;
+  document.getElementById("dash-stats").innerHTML=[
+    {top:"var(--p)",ic:"location_city",v:OBJS.length,l:"Объектов всего",s:`313 по контракту`},
+    {top:"var(--ok)",ic:"check_circle",v:OBJS.filter(o=>o.st==="ok").length,l:"В норме",s:`${OBJS.filter(o=>o.st==="err").length} неисправных`,vc:"var(--ok)"},
+    {top:"var(--warn)",ic:"warning",v:OBJS.filter(o=>o.st==="warn").length,l:"Требуют ТО",s:"Просрочено: 7",vc:"var(--warn)"},
+    {top:"var(--e)",ic:"error",v:OBJS.filter(o=>o.st==="err").length,l:"Неисправность",s:`${crit} крит. заявок`,vc:"var(--e)"},
+    {top:"var(--blue)",ic:"assignment",v:open,l:"Открытых заявок",s:`${crit} критичных`},
+    {top:"#9B72EF",ic:"task_alt",v:JOURNALS.filter(j=>j.signed).length,l:"ТО в мае",s:"из 313 по плану"},
+  ].map(s=>`<div class="stat"><div class="stat-t" style="background:${s.top}"></div><span class="i" style="font-size:18px;color:${s.vc||'var(--p)'}">${s.ic}</span><div class="stat-v" style="${s.vc?'color:'+s.vc:''}">${s.v}</div><div class="stat-l">${s.l}</div><div class="stat-s">${s.s}</div></div>`).join("");
+  // events
+  const evts=[
+    {o:"АТС г. Балтийск",e:"Потеря связи со считывателем КМСД",s:"СКУД",t:"12.05 09:41",st:"err"},
+    {o:"Административное здание",e:"Ошибка контроллера С2000-М — зона Б",s:"СКУД",t:"12.05 08:15",st:"err"},
+    {o:"ТУ №2 Советск",e:"АКБ ниже нормы — требует замены",s:"ОС",t:"11.05 14:00",st:"warn"},
+    {o:"АТС г. Зеленоградск",e:"Ложные срабатывания ИК-извещателей",s:"ОС/ОТС",t:"10.05 11:20",st:"warn"},
+    {o:"АТС г. Гусев",e:"ТО завершено, журнал подписан",s:"СКУД, ОС",t:"11.05 17:00",st:"ok"},
+  ];
+  document.getElementById("dash-events").innerHTML=`<table><thead><tr><th>Объект</th><th>Событие</th><th>Система</th><th>Время</th><th>Статус</th></tr></thead><tbody>${evts.map(e=>`<tr onclick="nav('obj')"><td><strong>${e.o}</strong></td><td>${e.e}</td><td>${e.s}</td><td style="color:var(--osfv);white-space:nowrap">${e.t}</td><td>${oBx[e.st]}</td></tr>`).join("")}</tbody></table>`;
+  const today=SCHEDULE.filter(s=>s.dt==="12.05.25");
+  document.getElementById("dash-today").innerHTML=today.length?today.map(s=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--olv)"><div style="width:30px;height:30px;border-radius:var(--r-s);background:var(--sfchh);display:flex;align-items:center;justify-content:center"><span class="i" style="font-size:16px;color:var(--p)">build</span></div><div style="flex:1"><div style="font-weight:600;font-size:13px">${oNm(s.obj)}</div><div style="font-size:11px;color:var(--osfv)">${s.wk} · ${uNm(s.uid)}</div></div>${oBx[s.st]||''}</div>`).join(""):`<div style="padding:20px;text-align:center;color:var(--osfv);font-size:13px">На сегодня ТО не запланировано</div>`;
+  document.getElementById("dash-crit").innerHTML=`<table><thead><tr><th>Объект</th><th>Описание</th><th>Приоритет</th><th>Статус</th></tr></thead><tbody>${TICKETS.filter(t=>t.pr==="crit"||t.pr==="high").map(t=>`<tr onclick="nav('tck')"><td><strong>${oNm(t.obj)}</strong></td><td style="font-size:12px">${t.desc.substring(0,45)}…</td><td>${pBx[t.pr]}</td><td>${sBx[t.st]}</td></tr>`).join("")}</tbody></table>`;
+  document.getElementById("dash-done").innerHTML=`<table><thead><tr><th>Дата</th><th>Объект</th><th>Исполнитель</th></tr></thead><tbody>${JOURNALS.filter(j=>j.signed).slice(0,5).map(j=>`<tr onclick="nav('jnl')"><td style="white-space:nowrap">${j.dt}</td><td><strong>${oNm(j.obj)}</strong></td><td>${uNm(j.uid)}</td></tr>`).join("")}</tbody></table>`;
+}
+
+// OBJECTS
+function initObj(){document.getElementById("obj-total").textContent=OBJS.length;renderObj(OBJS);}
+function filterObj(){
+  const q=document.getElementById("obj-q").value.toLowerCase();
+  const sys=document.getElementById("obj-sys").value;
+  const st=document.getElementById("obj-st").value;
+  renderObj(OBJS.filter(o=>(!q||o.nm.toLowerCase().includes(q)||o.addr.toLowerCase().includes(q))&&(!sys||o.sys.includes(sys))&&(!st||o.st===st)));
+}
+function renderObj(list){
+  document.getElementById("obj-total").textContent=list.length;
+  document.getElementById("obj-table").innerHTML=`<table><thead><tr><th>ID</th><th>Объект</th><th>Адрес</th><th>Система</th><th>Район</th><th>Плановое ТО</th><th>Статус</th><th></th></tr></thead><tbody>${list.map(o=>`<tr onclick="openObj('${o.id}')"><td style="color:var(--osfv);font-size:11px">${o.id}</td><td><strong>${o.nm}</strong></td><td style="color:var(--osfv);font-size:12px">${o.addr}</td><td>${o.sys}</td><td style="font-size:12px">${o.reg}</td><td style="white-space:nowrap">${o.dt}</td><td>${oBx[o.st]}</td><td><button class="btn txt" onclick="event.stopPropagation();startTO2('${o.id}')" style="padding:3px 7px;font-size:12px" title="Провести ТО"><span class="i" style="font-size:16px">build</span></button></td></tr>`).join("")}</tbody></table>`;
+}
+function openObj(id){
+  selObjId=id;
+  const o=OBJS.find(x=>x.id===id); if(!o)return;
+  document.getElementById("det-title").textContent=o.nm;
+  const objTcks=TICKETS.filter(t=>t.obj===id);
+  const objJnls=JOURNALS.filter(j=>j.obj===id);
+  document.getElementById("det-body").innerHTML=`
+    <div class="p2" style="margin-bottom:14px">
+      <div class="panel">
+        <h3><span class="i">info</span>Основная информация</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+          <div><div class="kv-k">ID</div><div class="kv-v">${o.id}</div></div>
+          <div><div class="kv-k">Статус</div><div class="kv-v">${oBx[o.st]}</div></div>
+          <div style="grid-column:span 2"><div class="kv-k">Адрес</div><div class="kv-v">${o.addr}</div></div>
+          <div><div class="kv-k">Тип системы</div><div class="kv-v">${o.sys}</div></div>
+          <div><div class="kv-k">Плановое ТО</div><div class="kv-v">${o.dt}</div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3><span class="i">assignment</span>Заявки по объекту</h3>
+        ${objTcks.length?objTcks.map(t=>`<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--olv);gap:8px"><div><div style="font-weight:600;font-size:13px">${t.desc.substring(0,55)}</div><div style="font-size:11px;color:var(--osfv);margin-top:2px">${t.dt}</div></div><div style="display:flex;gap:4px;flex-shrink:0">${pBx[t.pr]}${sBx[t.st]}</div></div>`).join(""):'<div style="color:var(--osfv);font-size:13px;padding:8px 0">Заявок нет</div>'}
+      </div>
+    </div>
+    <div class="panel">
+      <h3><span class="i">menu_book</span>История журналов ТО</h3>
+      ${objJnls.length?`<div class="tw" style="margin-bottom:12px"><table><thead><tr><th>Дата</th><th>Система</th><th>Результат</th><th>Исполнитель</th><th>Подпись</th></tr></thead><tbody>${objJnls.map(j=>`<tr><td style="white-space:nowrap">${j.dt}</td><td>${j.sys}</td><td style="font-size:12px;color:var(--osfv);max-width:240px">${j.res.substring(0,70)}…</td><td>${uNm(j.uid)}</td><td>${j.signed?'<span class="bx ok">Подписан</span>':'<span class="bx wn">Ожидает</span>'}</td></tr>`).join("")}</tbody></table></div>`:'<div style="color:var(--osfv);font-size:13px;margin-bottom:12px">Журналов нет</div>'}
+      <button class="btn fill" onclick="startTO2('${o.id}')"><span class="i">add</span>Провести ТО сейчас</button>
+    </div>`;
+  nav("objdet");
+}
+function startTOdet(){if(selObjId)startTO2(selObjId);}
+function startTO2(id){
+  selObjId=id;
+  const o=OBJS.find(x=>x.id===id); if(!o)return;
+  const isSKUD=o.sys.includes("СКУД");const isOS=o.sys.includes("ОС")||o.sys.includes("ОТС");
+  curChkList=isSKUD&&isOS?[...CL_OS,...CL_SKUD]:isSKUD?CL_SKUD:CL_OS;
+  chkState={}; curChkList.forEach((_,i)=>{chkState[i]=false;});
+  document.getElementById("jnl-form-body").innerHTML=`
+    <div class="jform">
+      <div class="jfsec"><h4>Объект</h4>
+        <div style="font-size:15px;font-weight:700">${o.nm}</div>
+        <div style="font-size:13px;color:var(--osfv);margin-top:3px">${o.addr} · ${o.sys}</div>
+      </div>
+      <div class="jfsec">
+        <h4>Прогресс — Регламент №1 (${curChkList.length} пунктов)</h4>
+        <div class="chk-prog">
+          <div class="chk-bar"><div class="chk-fill" id="chkbar" style="width:0%"></div></div>
+          <span id="chkpct" style="font-size:13px;font-weight:700;color:var(--p);white-space:nowrap">0 / ${curChkList.length}</span>
+        </div>
+        ${curChkList.map((item,i)=>`<div class="chki" id="chki-${i}" onclick="togChk(${i})"><input type="checkbox" id="cb-${i}" onchange="event.stopPropagation();togChk(${i})"/><label for="cb-${i}">${item}</label></div>`).join("")}
+      </div>
+      <div class="jfsec">
+        <h4>Результат работ и замечания</h4>
+        <textarea class="fin" id="jf-res" rows="4" placeholder="Опишите выполненные работы, выявленные неисправности, принятые меры…" style="resize:vertical"></textarea>
+      </div>
+      <div class="jfsec" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div><label class="f-lbl" style="margin-bottom:4px">Дата проведения</label><input type="date" class="fin" id="jf-date" value="${new Date().toISOString().split('T')[0]}" style="max-width:180px"/></div>
+        <div><label class="f-lbl" style="margin-bottom:4px">Исполнитель</label><input class="fin" id="jf-uid" value="${me?me.nm:'—'}" style="max-width:200px" readonly/></div>
+      </div>
+      <div class="jfsec" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn fill" onclick="submitJnl('${id}')"><span class="i">check</span>Сохранить журнал</button>
+        <button class="btn tone" onclick="printJnlForm('${id}')"><span class="i">print</span>Печать акта</button>
+        <button class="btn txt" onclick="nav('jnl')"><span class="i">close</span>Отмена</button>
+      </div>
+    </div>`;
+  nav("jnlform");
+}
+function togChk(i){
+  chkState[i]=!chkState[i];
+  const item=document.getElementById("chki-"+i);const cb=document.getElementById("cb-"+i);
+  if(item)item.classList.toggle("done",chkState[i]);
+  if(cb)cb.checked=chkState[i];
+  const done=Object.values(chkState).filter(Boolean).length;const total=curChkList.length;
+  const bar=document.getElementById("chkbar");const pct=document.getElementById("chkpct");
+  if(bar)bar.style.width=Math.round(done/total*100)+"%";
+  if(pct)pct.textContent=`${done} / ${total}`;
+}
+function submitJnl(oid){
+  const done=Object.values(chkState).filter(Boolean).length;const total=curChkList.length;
+  if(done<Math.ceil(total*0.8)){if(!confirm(`Выполнено только ${done} из ${total} пунктов. Сохранить всё равно?`))return;}
+  const res=document.getElementById("jf-res").value;
+  const dt=document.getElementById("jf-date").value.split("-").reverse().map((v,i)=>i===0?v.slice(2):v).join(".");
+  const o=OBJS.find(x=>x.id===oid);
+  JOURNALS.unshift({id:"ЖУ-"+Date.now(),dt,obj:oid,sys:o?o.sys:"—",res:res||`ТО выполнено. ${done}/${total} пунктов Регламента №1. Система сдана в работоспособном состоянии.`,uid:me.id,signed:false});
+  if(o)o.dt=dt;
+  initJnl(); initDash(); nav("jnl");
+  toast("Журнал сохранён. Получите подпись заказчика.","success");
+}
+function printJnlForm(oid){
+  const o=OBJS.find(x=>x.id===oid);
+  const done=Object.values(chkState).filter(Boolean).length;
+  const res=(document.getElementById("jf-res")||{}).value||"—";
+  const dt=(document.getElementById("jf-date")||{}).value||new Date().toISOString().split("T")[0];
+  const html=`<!DOCTYPE html><html><head><title>Акт ТО — ${o?o.nm:""}</title><style>body{font-family:Arial,sans-serif;padding:24px;font-size:12px;max-width:800px;margin:0 auto;}h2{font-size:14px;margin-bottom:8px;}table{width:100%;border-collapse:collapse;margin:12px 0;}th,td{border:1px solid #ccc;padding:6px;text-align:left;}th{background:#f5f5f5;}.sign{margin-top:40px;display:flex;justify-content:space-between;}</style></head><body><h2>ЖУРНАЛ ПРОВЕДЕНИЯ ТЕХНИЧЕСКОЙ ПОДДЕРЖКИ И ТЕХНИЧЕСКОГО ОБСЛУЖИВАНИЯ ТЕХНИЧЕСКИХ СРЕДСТВ ОХРАНЫ</h2><p><strong>Объект:</strong> ${o?o.nm:""}</p><p><strong>Адрес:</strong> ${o?o.addr:""}</p><p><strong>Дата:</strong> ${dt} &nbsp; <strong>Тип системы:</strong> ${o?o.sys:""} &nbsp; <strong>Исполнитель:</strong> ${me.nm}</p><p><strong>Выполнено пунктов Регламента №1:</strong> ${done} из ${curChkList.length}</p><p><strong>Результат:</strong> ${res}</p><p style="margin-top:8px">Система (системы) сдана (сданы) Заказчику в работоспособном состоянии в дальнейшую эксплуатацию.</p><div class="sign"><div>Исполнитель: ________________________ / ${me.nm} /</div><div>Заказчик: ________________________</div></div></body></html>`;
+  const w=window.open("","_blank");if(w){w.document.write(html);w.document.close();setTimeout(()=>w.print(),300);}
+}
+
+// TICKETS
+function initTck(){renderTck(TICKETS);}
+function filterTck(){
+  const q=document.getElementById("tck-q").value.toLowerCase();
+  const pr=document.getElementById("tck-pr").value;
+  const st=document.getElementById("tck-st").value;
+  renderTck(TICKETS.filter(t=>(!q||oNm(t.obj).toLowerCase().includes(q)||t.desc.toLowerCase().includes(q))&&(!pr||t.pr===pr)&&(!st||t.st===st)));
+}
+function renderTck(list){
+  document.getElementById("tck-table").innerHTML=`<table><thead><tr><th>ID</th><th>Объект</th><th>Описание</th><th>Тип</th><th>Приоритет</th><th>Источник</th><th>Исполнитель</th><th>Дата</th><th>Статус</th></tr></thead><tbody>${list.map(t=>`<tr><td style="color:var(--osfv);font-size:11px">${t.id}</td><td><strong>${oNm(t.obj)}</strong></td><td style="max-width:220px;font-size:12px">${t.desc}</td><td style="font-size:12px">${t.type}</td><td>${pBx[t.pr]}</td><td>${srcBx[t.src]||''}</td><td style="font-size:12px">${uNm(t.uid)}</td><td style="color:var(--osfv);font-size:11px;white-space:nowrap">${t.dt}</td><td>${sBx[t.st]}</td></tr>`).join("")}</tbody></table>`;
+}
+function openNewTicket(){document.getElementById("m-tck").classList.add("on");}
+function submitTicket(){
+  const obj=document.getElementById("nt-obj").value;
+  const desc=document.getElementById("nt-desc").value.trim();
+  const pr=document.getElementById("nt-pr").value;
+  const uid=parseInt(document.getElementById("nt-usr").value)||null;
+  const type=document.getElementById("nt-type").value;
+  if(!obj){toast("Выберите объект","error");return;}
+  if(!desc){toast("Введите описание неисправности","error");return;}
+  const now=new Date();
+  const dtStr=`${now.getDate().toString().padStart(2,"0")}.${(now.getMonth()+1).toString().padStart(2,"0")}.${now.getFullYear().toString().slice(2)} ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
+  TICKETS.unshift({id:"ЗВ-"+Date.now(),obj,pr,desc,type,src:"manual",uid,st:"new",dt:dtStr});
+  document.getElementById("m-tck").classList.remove("on");
+  document.getElementById("nt-desc").value="";
+  const open=TICKETS.filter(t=>t.st==="open"||t.st==="new").length;
+  document.getElementById("tck-cnt").textContent=open;
+  document.getElementById("sb-tck-b").textContent=open;
+  initTck(); initDash();
+}
+
+// JOURNALS
+function initJnl(){renderJnl(JOURNALS);}
+function filterJnl(){
+  const q=document.getElementById("jnl-q").value.toLowerCase();
+  const sys=document.getElementById("jnl-sys").value;
+  renderJnl(JOURNALS.filter(j=>(!q||oNm(j.obj).toLowerCase().includes(q)||j.res.toLowerCase().includes(q))&&(!sys||j.sys.includes(sys))));
+}
+function renderJnl(list){
+  document.getElementById("jnl-table").innerHTML=`<table><thead><tr><th>ID</th><th>Дата</th><th>Объект</th><th>Система</th><th>Результат</th><th>Исполнитель</th><th>Подпись</th><th></th></tr></thead><tbody>${list.map(j=>`<tr><td style="color:var(--osfv);font-size:11px">${j.id}</td><td style="white-space:nowrap">${j.dt}</td><td><strong>${oNm(j.obj)}</strong></td><td>${j.sys}</td><td style="max-width:220px;font-size:12px;color:var(--osfv)">${j.res.substring(0,70)}…</td><td>${uNm(j.uid)}</td><td>${j.signed?'<span class="bx ok">Подписан</span>':'<span class="bx wn">Ожидает</span>'}</td><td><button class="btn txt" style="padding:3px 7px" onclick="event.stopPropagation();toast('Открываю журнал '+j.id)"><span class="i" style="font-size:15px">print</span></button></td></tr>`).join("")}</tbody></table>`;
+}
+function openNewJnl(){
+  const need=OBJS.find(o=>o.st==="warn"||o.st==="err")||OBJS[0];
+  startTO2(need.id);
+}
+
+// SCHEDULE
+function initSch(){
+  const done=SCHEDULE.filter(s=>s.st==="done").length;
+  const planned=SCHEDULE.filter(s=>s.st!=="done").length;
+  document.getElementById("sch-stats").innerHTML=[
+    {top:"var(--ok)",ic:"event_available",v:done,l:"Выполнено в мае"},
+    {top:"var(--p)",ic:"pending_actions",v:planned,l:"Запланировано"},
+    {top:"var(--blue)",ic:"today",v:SCHEDULE.filter(s=>s.dt==="12.05.25").length,l:"На сегодня"},
+    {top:"var(--e)",ic:"warning",v:SCHEDULE.filter(s=>s.st==="warn").length,l:"Требуют внимания"},
+  ].map(s=>`<div class="stat"><div class="stat-t" style="background:${s.top}"></div><span class="i" style="font-size:18px;color:var(--p)">${s.ic}</span><div class="stat-v">${s.v}</div><div class="stat-l">${s.l}</div></div>`).join("");
+  document.getElementById("sch-table").innerHTML=`<table><thead><tr><th>Дата</th><th>Объект</th><th>Адрес</th><th>Вид работ</th><th>Исполнитель</th><th>Статус</th></tr></thead><tbody>${SCHEDULE.map(s=>`<tr onclick="openObj('${s.obj}')"><td style="white-space:nowrap">${s.dt}</td><td><strong>${oNm(s.obj)}</strong></td><td style="color:var(--osfv);font-size:12px">${oAd(s.obj)}</td><td>${s.wk}</td><td>${uNm(s.uid)}</td><td>${s.st==="done"?'<span class="bx ok">Выполнено</span>':s.st==="warn"?'<span class="bx wn">Запланировано</span>':oBx[s.st]||''}</td></tr>`).join("")}</tbody></table>`;
+}
+
+// REPORTS
+function initRep(){
+  const bar=(v,max,c)=>`<div class="brow"><div class="bbar"><div class="bfill" style="width:${max?Math.round(v/max*100):0}%;background:${c}"></div></div><span class="bval" style="color:${c}">${v}</span></div>`;
+  document.getElementById("rep-st").innerHTML=[["В норме",OBJS.filter(o=>o.st==="ok").length,"var(--ok)"],["Требуют ТО",OBJS.filter(o=>o.st==="warn").length,"var(--warn)"],["Неисправность",OBJS.filter(o=>o.st==="err").length,"var(--e)"]].map(([l,v,c])=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>${l}</span><span style="color:${c};font-weight:700">${v}</span></div>${bar(v,OBJS.length,c)}</div>`).join("");
+  const months=["Янв","Фев","Мар","Апр","Май","Июн"];const vals=[28,31,44,38,52,0];
+  document.getElementById("rep-mon").innerHTML=`<div style="display:flex;gap:5px;align-items:flex-end;height:90px;margin-bottom:8px">${vals.map((v,i)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:100%;background:${i===4?"var(--p)":"var(--sfchh)"};border-radius:3px 3px 0 0;height:${v?Math.round(v/55*75)+8:3}px"></div><span style="font-size:10px;color:var(--osfv)">${months[i]}</span></div>`).join("")}</div>`;
+  const techs=[["Петров И.И.",28,"var(--p)"],["Сидоров А.В.",22,"var(--blue)"],["Иванов С.П.",19,"var(--purple)"]];
+  document.getElementById("rep-tch").innerHTML=techs.map(([nm,v,c])=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>${nm}</span><span style="font-weight:700;color:${c}">${v} ТО</span></div>${bar(v,30,c)}</div>`).join("");
+  const regs=[["г. Калининград",4],["г. Советск",2],["г. Гусев",1],["г. Зеленоградск",1],["г. Балтийск",1],["Прочие",3]];
+  document.getElementById("rep-reg").innerHTML=regs.map(([r,v])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--olv);font-size:13px"><span>${r}</span><span class="bx bl">${v} объектов</span></div>`).join("");
+}
+
+// USERS ADMIN
+function initUsr(){
+  document.getElementById("usr-table").innerHTML=`<table><thead><tr><th></th><th>Имя</th><th>Email</th><th>Роль</th><th></th></tr></thead><tbody>${USERS.map(u=>`<tr><td><div style="width:32px;height:32px;border-radius:50%;background:var(--p);color:var(--op);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px">${u.init}</div></td><td><strong>${u.nm}</strong></td><td style="color:var(--osfv);font-size:12px">${u.email}</td><td><span class="bx ${u.role==="ADMIN"?"ok":u.role==="TECHNICIAN"?"bl":"wn"}">${u.role}</span></td><td><button class="btn txt" style="padding:3px 7px"><span class="i" style="font-size:16px">edit</span></button></td></tr>`).join("")}</tbody></table>`;
+}
+</script>
+</body>
+</html>

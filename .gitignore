@@ -1,0 +1,13 @@
+# OS / editor
+.DS_Store
+*.swp
+*.tmp
+*.log
+
+# Local backups
+*.bak
+*.bak.*
+
+# Никаких секретов в репо
+.env
+*.local.json
