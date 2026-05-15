@@ -953,6 +953,7 @@ footer{background:var(--sfchh);padding:36px 24px 72px;border-top:1px solid var(-
       <button class="smtb" onclick="aTab('analytics',this)"><span class="i" style="font-size:17px">analytics</span>Аналитика</button>
       <button class="smtb" onclick="aTab('legal',this)"><span class="i" style="font-size:17px">gavel</span>Юридические</button>
       <button class="smtb" onclick="aTab('leads',this)"><span class="i" style="font-size:17px">contact_mail</span>Заявки с сайта</button>
+      <button class="smtb" onclick="aTab('voicecalls',this)"><span class="i" style="font-size:17px">phone_callback</span>Звонки</button>
       <button class="smtb" onclick="aTab('settings',this)"><span class="i" style="font-size:17px">settings</span>Настройки</button>
       <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
         <div id="theme-switch" style="display:flex;align-items:center;gap:4px;padding-right:8px;border-right:1px solid var(--olv);margin-right:4px">
@@ -1172,6 +1173,32 @@ footer{background:var(--sfchh);padding:36px 24px 72px;border-top:1px solid var(-
         <div class="ht" style="margin-bottom:6px">Заявки с сайта</div>
         <div class="hs">Обращения из формы на главной странице</div>
         <div class="tw" id="leads-table"></div>
+      </div>
+
+      <!-- VOICE CALLS -->
+      <div id="at-voicecalls" style="display:none">
+        <div class="ht" style="margin-bottom:6px">Звонки</div>
+        <div class="hs">Входящие звонки в нерабочее время и обратные вызовы — обрабатывает AI-оператор. Каждый звонок: транскрипт диалога + краткое summary.</div>
+        <div style="margin:14px 0;display:flex;gap:8px;flex-wrap:wrap">
+          <select class="fin" id="voice-filter-status" style="max-width:200px" onchange="vsbAdmin.loadVoiceCalls && vsbAdmin.loadVoiceCalls()">
+            <option value="">Все статусы</option>
+            <option value="new">Новые</option>
+            <option value="in_work">В работе</option>
+            <option value="contacted">Связались</option>
+            <option value="done">Закрыто</option>
+            <option value="refused">Отказ</option>
+          </select>
+          <select class="fin" id="voice-filter-cat" style="max-width:240px" onchange="vsbAdmin.loadVoiceCalls && vsbAdmin.loadVoiceCalls()">
+            <option value="">Все категории</option>
+            <option value="видеонаблюдение">Видеонаблюдение</option>
+            <option value="скуд">СКУД</option>
+            <option value="сигнализация">Сигнализация</option>
+            <option value="то">ТО / обслуживание</option>
+            <option value="другое">Другое</option>
+          </select>
+          <button class="btn tone" onclick="vsbAdmin.loadVoiceCalls && vsbAdmin.loadVoiceCalls()" style="padding:7px 14px"><span class="i">refresh</span>Обновить</button>
+        </div>
+        <div id="voice-calls-list"></div>
       </div>
 
       <!-- SETTINGS -->
@@ -1458,7 +1485,7 @@ function aTab(t,el){
   adminTabActive=t;
   document.querySelectorAll("#adminwrap .smtb").forEach(b=>b.classList.remove("on"));
   if(el)el.classList.add("on");
-  ["overview","catalog","seo","analytics","legal","leads","settings"].forEach(x=>{
+  ["overview","catalog","seo","analytics","legal","leads","voicecalls","settings"].forEach(x=>{
     const d=document.getElementById("at-"+x);if(d)d.style.display=x===t?"":"none";
   });
 }
@@ -8341,6 +8368,151 @@ function initAdminPanels(){
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyHours);
   else setTimeout(applyHours, 200);
+})();
+</script>
+
+
+<!-- VSB_PHASE33_V1 -->
+<script id="vsb-phase33">
+(function(){
+  function esc(s){ return (s==null?'':String(s)).replace(/[<>&"']/g, function(c){ return ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'})[c]; }); }
+  function fmt(n){ try{ return (Number(n)||0).toLocaleString('ru-RU'); }catch(e){ return n; } }
+  function fmtDur(s){ s = Number(s)||0; var m = Math.floor(s/60), r = s%60; return m+':'+String(r).padStart(2,'0'); }
+  function fmtDate(s){ if(!s) return ''; var d = new Date(s.replace(' ','T')+'Z'); return d.toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+
+  var STATUS_COLORS = {
+    'new':       'background:#FFE0B2;color:#6F3000',
+    'in_work':   'background:#BBDEFB;color:#0D47A1',
+    'contacted': 'background:#C8E6C9;color:#1B5E20',
+    'done':      'background:#CFD8DC;color:#37474F',
+    'refused':   'background:#FFCDD2;color:#B71C1C',
+  };
+  var STATUS_LABEL = {new:'Новый', in_work:'В работе', contacted:'Связались', done:'Закрыт', refused:'Отказ'};
+  var DIR_LABEL = {in:'📞 Входящий', out:'📲 Исходящий'};
+  var CAT_ICON = {
+    'видеонаблюдение':'videocam', 'скуд':'key', 'сигнализация':'notifications_active',
+    'то':'build', 'другое':'help_outline'
+  };
+
+  async function loadCalls(){
+    var listEl = document.getElementById('voice-calls-list');
+    if(!listEl) return;
+    if(!window.vsbAdmin || !window.vsbAdmin.api){
+      listEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--osfv)">Войдите в админку</div>';
+      return;
+    }
+    var status = (document.getElementById('voice-filter-status')||{}).value || '';
+    var cat = (document.getElementById('voice-filter-cat')||{}).value || '';
+    listEl.innerHTML = '<div style="padding:18px;text-align:center;color:var(--osfv)">Загружаем…</div>';
+    try{
+      var calls = await window.vsbAdmin.api('/admin/voice/calls');
+      if(status) calls = calls.filter(function(c){ return c.manager_status === status; });
+      if(cat)    calls = calls.filter(function(c){ return (c.category||'').toLowerCase() === cat; });
+      if(!calls.length){
+        listEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--osfv)">Звонков пока нет</div>';
+        return;
+      }
+      listEl.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="text-align:left;border-bottom:1px solid var(--md-sys-color-outline-variant,var(--olv));font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--osfv)">'
+        + '<th style="padding:8px 6px">Время</th>'
+        + '<th style="padding:8px 6px">Направление</th>'
+        + '<th style="padding:8px 6px">Телефон / код</th>'
+        + '<th style="padding:8px 6px">Длит.</th>'
+        + '<th style="padding:8px 6px">Категория</th>'
+        + '<th style="padding:8px 6px">Summary</th>'
+        + '<th style="padding:8px 6px">Статус</th>'
+        + '<th></th>'
+        + '</tr></thead><tbody>'
+        + calls.map(function(c){
+            var statusStyle = STATUS_COLORS[c.manager_status] || '';
+            var catIcon = CAT_ICON[(c.category||'').toLowerCase()] || 'phone';
+            return '<tr style="border-bottom:1px solid var(--md-sys-color-outline-variant,var(--olv))">'
+              + '<td style="padding:8px 6px;font-size:12px;color:var(--osfv);white-space:nowrap">'+esc(fmtDate(c.started_at))+'</td>'
+              + '<td style="padding:8px 6px;white-space:nowrap">'+esc(DIR_LABEL[c.direction]||c.direction)+'</td>'
+              + '<td style="padding:8px 6px"><a href="tel:'+esc(c.phone)+'" style="color:inherit">'+esc(c.phone)+'</a>'
+              +    (c.client_code ? '<div style="font-family:monospace;color:var(--md-sys-color-primary,var(--p));font-size:11px">'+esc(c.client_code)+'</div>' : '')
+              + '</td>'
+              + '<td style="padding:8px 6px;font-family:monospace">'+fmtDur(c.duration_sec)+'</td>'
+              + '<td style="padding:8px 6px;white-space:nowrap"><span class="i" style="font-size:16px;vertical-align:-3px">'+catIcon+'</span> '+esc(c.category||'—')+'</td>'
+              + '<td style="padding:8px 6px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(c.summary||'')+'">'+esc(c.summary||'—')+'</td>'
+              + '<td style="padding:8px 6px"><span style="'+statusStyle+';font-size:11px;padding:3px 9px;border-radius:8px;font-weight:700">'+esc(STATUS_LABEL[c.manager_status]||c.manager_status)+'</span></td>'
+              + '<td style="padding:8px 6px;white-space:nowrap">'
+              +   '<button class="btn txt" style="padding:4px 8px" onclick="vsbAdmin.viewVoiceCall('+c.id+')" title="Открыть"><span class="i" style="font-size:18px">visibility</span></button>'
+              + '</td>'
+              + '</tr>';
+          }).join('')
+        + '</tbody></table>';
+    }catch(e){
+      listEl.innerHTML = '<div style="padding:18px;color:var(--md-sys-color-error,var(--e))">⚠ '+esc(e.message)+'</div>';
+    }
+  }
+
+  async function viewCall(id){
+    try{
+      var d = await window.vsbAdmin.api('/admin/voice/calls/' + id);
+      var c = d.call;
+      var html = '<div class="vsb-modal-bg" id="vsb-voice-modal"><div class="vsb-modal" onclick="event.stopPropagation()" style="max-width:680px;width:92%;max-height:88vh;overflow-y:auto">'
+        + '<h3><span class="i">phone_callback</span>Звонок #'+c.id+'</h3>'
+        + '<div style="font-size:13px;margin-bottom:14px;color:var(--md-sys-color-on-surface,var(--obg))">'
+        +   '<div><strong>Телефон:</strong> '+esc(c.phone)+'</div>'
+        +   '<div><strong>Направление:</strong> '+esc(DIR_LABEL[c.direction]||c.direction)+'</div>'
+        +   '<div><strong>Время:</strong> '+esc(fmtDate(c.started_at))+'</div>'
+        +   '<div><strong>Длительность:</strong> '+fmtDur(c.duration_sec)+'</div>'
+        +   '<div><strong>Категория:</strong> '+esc(c.category||'—')+'</div>'
+        +   (c.summary ? '<div style="margin-top:6px"><strong>Summary AI:</strong> '+esc(c.summary)+'</div>' : '')
+        +   (c.recording_url ? '<div style="margin-top:8px"><audio controls src="'+esc(c.recording_url)+'" style="width:100%"></audio></div>' : '')
+        + '</div>'
+        + '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--osfv);margin-bottom:6px">Транскрипт диалога</div>'
+        + '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:360px;overflow-y:auto">'
+        + (d.turns.length ? d.turns.map(function(t){
+            var bg = t.role === 'user' ? 'var(--md-sys-color-primary-container,var(--pc))' : 'var(--md-sys-color-surface-container,var(--sfch))';
+            var col = t.role === 'user' ? 'var(--md-sys-color-on-primary-container,var(--opc))' : 'var(--md-sys-color-on-surface,var(--obg))';
+            var who = t.role === 'user' ? 'Клиент' : 'AI';
+            return '<div style="padding:8px 12px;border-radius:10px;background:'+bg+';color:'+col+';font-size:12.5px;line-height:1.45;align-self:'+(t.role==='user'?'flex-end':'flex-start')+';max-width:88%">'
+              + '<div style="font-size:10px;opacity:.7;margin-bottom:2px">'+who+' · реплика #'+t.turn_no+'</div>'
+              + esc(t.text)
+              + '</div>';
+          }).join('') : '<div style="color:var(--osfv);text-align:center">Транскрипта нет</div>')
+        + '</div>'
+        + '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--osfv);margin-bottom:6px">Статус менеджера</div>'
+        + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">'
+        + ['new','in_work','contacted','done','refused'].map(function(s){
+            var active = c.manager_status === s;
+            return '<button class="btn '+(active?'fill':'out')+'" style="padding:6px 12px;font-size:12px" onclick="vsbAdmin.setVoiceStatus('+c.id+',\''+s+'\')">'+esc(STATUS_LABEL[s])+'</button>';
+          }).join('')
+        + '</div>'
+        + '<div class="actions"><button class="btn fill" style="flex:1;justify-content:center" onclick="document.getElementById(\'vsb-voice-modal\').remove()"><span class="i">close</span>Закрыть</button></div>'
+        + '</div></div>';
+      var div = document.createElement('div'); div.innerHTML = html;
+      document.body.appendChild(div.firstChild);
+      document.getElementById('vsb-voice-modal').addEventListener('click', function(ev){ if(ev.target.id === 'vsb-voice-modal') ev.target.remove(); });
+    }catch(e){
+      if(typeof toast === 'function') toast('Ошибка: ' + e.message, 'error');
+    }
+  }
+
+  async function setStatus(id, status){
+    try{
+      await window.vsbAdmin.api('/admin/voice/calls/' + id + '/status', { method:'PATCH', body: { manager_status: status }});
+      if(typeof toast === 'function') toast('Статус обновлён','success');
+      var m = document.getElementById('vsb-voice-modal'); if(m) m.remove();
+      loadCalls();
+    }catch(e){
+      if(typeof toast === 'function') toast('Ошибка: ' + e.message, 'error');
+    }
+  }
+
+  if(window.vsbAdmin){
+    window.vsbAdmin.loadVoiceCalls = loadCalls;
+    window.vsbAdmin.viewVoiceCall = viewCall;
+    window.vsbAdmin.setVoiceStatus = setStatus;
+    var origATab = window.aTab;
+    if(origATab){
+      window.aTab = function(t, el){
+        origATab(t, el);
+        if(t === 'voicecalls') setTimeout(loadCalls, 50);
+      };
+    }
+  }
 })();
 </script>
 
