@@ -1123,6 +1123,25 @@ footer{background:var(--sfchh);padding:36px 24px 72px;border-top:1px solid var(-
             <div id="set-maps-status" style="font-size:12px;color:var(--osfv);min-height:14px;margin-bottom:6px"></div>
             <button class="btn fill" onclick="vsbSettings.save(['ya_maps_key','ya_maps_coords'], 'set-maps-status')"><span class="i">save</span>Сохранить и подключить карту</button>
           </div>
+          <div class="apanel"><h3><span class="i">phone_in_talk</span>Tinkoff VoiceKit (AI-телефония)</h3>
+            <p style="font-size:12px;color:var(--osfv);margin-bottom:10px">Ключи Tinkoff для распознавания и синтеза речи. Используются в сценарии входящих звонков AI-консультанта. Получить: <a href="https://www.tinkoff.ru/business/openapi/voicekit-api" target="_blank" style="color:var(--md-sys-color-primary,var(--p))">cabinet.tinkoff.ru → VoiceKit</a>.</p>
+            <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--osfv)">API Key</label><input class="fin" id="set-tinkoff_api_key" placeholder="dvLh..." style="margin-top:4px"/></div>
+            <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--osfv)">Secret Key</label><input class="fin" id="set-tinkoff_secret_key" type="password" placeholder="••••••" style="margin-top:4px"/></div>
+            <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--osfv)">Голос синтеза</label>
+              <select class="fin" id="set-tinkoff_voice" style="margin-top:4px">
+                <option value="alyona">Алёна (женский, нейтральный)</option>
+                <option value="anna">Анна (женский, дружелюбный)</option>
+                <option value="dorofeev">Дорофеев (мужской, деловой)</option>
+                <option value="maxim">Максим (мужской, спокойный)</option>
+                <option value="alexander">Александр (мужской)</option>
+              </select>
+            </div>
+            <div id="set-voicekit-status" style="font-size:12px;color:var(--osfv);min-height:14px;margin-bottom:6px"></div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              <button class="btn fill" onclick="vsbSettings.save(['tinkoff_api_key','tinkoff_secret_key','tinkoff_voice'], 'set-voicekit-status')"><span class="i">save</span>Сохранить</button>
+              <button class="btn out" onclick="vsbAdmin.testVoiceKit && vsbAdmin.testVoiceKit()" title="Озвучить тестовую фразу"><span class="i">volume_up</span>Тест голоса</button>
+            </div>
+          </div>
           <div class="apanel"><h3><span class="i">call</span>Интеграция коллтрекинга</h3>
             <p style="font-size:13px;color:var(--osfv);margin-bottom:12px">Подключите Calltouch, CoMagic или другой сервис для отслеживания звонков с сайта.</p>
             <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--osfv)">Скрипт коллтрекинга</label><textarea class="fin" id="set-calltouch" rows="3" placeholder="&lt;script&gt;…&lt;/script&gt;" style="margin-top:4px;font-family:monospace;font-size:12px"></textarea></div>
@@ -8513,6 +8532,42 @@ function initAdminPanels(){
       };
     }
   }
+})();
+</script>
+
+
+<!-- VSB_PHASE34_UI_V1 -->
+<script id="vsb-phase34-ui">
+(function(){
+  if(!window.vsbAdmin) return;
+  window.vsbAdmin.testVoiceKit = async function(){
+    var st = document.getElementById('set-voicekit-status');
+    var voice = (document.getElementById('set-tinkoff_voice')||{}).value || 'alyona';
+    if(st){ st.textContent = 'Запрос синтеза…'; st.style.color = 'var(--osfv)'; }
+    try{
+      var r = await fetch('/api/smeta/voice/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: 'Здравствуйте! Это тест голоса ВСБ тридцать девять. Сейчас вы слышите голос, который будет отвечать клиентам по телефону.',
+          voice: voice,
+          encoding: 'LINEAR16',
+          sample_rate: 16000,
+        }),
+      });
+      if(!r.ok){
+        var err = '';
+        try{ err = (await r.json()).detail; }catch(e){}
+        throw new Error(err || ('HTTP ' + r.status));
+      }
+      var blob = await r.blob();
+      var url = URL.createObjectURL(blob);
+      var a = new Audio(url); a.play();
+      if(st){ st.style.color = 'var(--md-sys-color-primary,var(--p))'; st.textContent = '✓ Воспроизведение… (' + voice + ')'; }
+    }catch(e){
+      if(st){ st.style.color = 'var(--md-sys-color-error,var(--e))'; st.textContent = '⚠ ' + e.message; }
+    }
+  };
 })();
 </script>
 
