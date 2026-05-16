@@ -1123,22 +1123,47 @@ footer{background:var(--sfchh);padding:36px 24px 72px;border-top:1px solid var(-
             <div id="set-maps-status" style="font-size:12px;color:var(--osfv);min-height:14px;margin-bottom:6px"></div>
             <button class="btn fill" onclick="vsbSettings.save(['ya_maps_key','ya_maps_coords'], 'set-maps-status')"><span class="i">save</span>Сохранить и подключить карту</button>
           </div>
-          <div class="apanel"><h3><span class="i">phone_in_talk</span>Tinkoff VoiceKit (AI-телефония)</h3>
-            <p style="font-size:12px;color:var(--osfv);margin-bottom:10px">Ключи Tinkoff для распознавания и синтеза речи. Используются в сценарии входящих звонков AI-консультанта. Получить: <a href="https://www.tinkoff.ru/business/openapi/voicekit-api" target="_blank" style="color:var(--md-sys-color-primary,var(--p))">cabinet.tinkoff.ru → VoiceKit</a>.</p>
-            <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--osfv)">API Key</label><input class="fin" id="set-tinkoff_api_key" placeholder="dvLh..." style="margin-top:4px"/></div>
-            <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--osfv)">Secret Key</label><input class="fin" id="set-tinkoff_secret_key" type="password" placeholder="••••••" style="margin-top:4px"/></div>
-            <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--osfv)">Голос синтеза</label>
-              <select class="fin" id="set-tinkoff_voice" style="margin-top:4px">
-                <option value="alyona">Алёна (женский, нейтральный)</option>
-                <option value="anna">Анна (женский, дружелюбный)</option>
-                <option value="dorofeev">Дорофеев (мужской, деловой)</option>
-                <option value="maxim">Максим (мужской, спокойный)</option>
-                <option value="alexander">Александр (мужской)</option>
-              </select>
+          <div class="apanel"><h3><span class="i">phone_in_talk</span>Голосовой бот (STT + TTS)</h3>
+            <p style="font-size:12px;color:var(--osfv);margin-bottom:10px">Распознавание речи клиента и синтез ответов AI. <strong>STT</strong> — через Tinkoff VoiceKit. <strong>TTS</strong> — выбирайте провайдера (Tinkoff даёт TTS только юр.лицам, поэтому по умолчанию ВсеГПТ).</p>
+
+            <div style="margin-bottom:14px;padding:10px;background:var(--md-sys-color-surface-container-low,var(--sfcl));border-radius:8px">
+              <div style="font-weight:700;font-size:12px;color:var(--md-sys-color-primary,var(--p));margin-bottom:6px"><span class="i" style="vertical-align:-3px;font-size:16px">hearing</span> STT — Tinkoff VoiceKit (распознавание)</div>
+              <div style="margin-bottom:8px"><label style="font-size:11px;font-weight:700;color:var(--osfv)">Tinkoff API Key</label><input class="fin" id="set-tinkoff_api_key" placeholder="dvLh..." style="margin-top:4px"/></div>
+              <div style="margin-bottom:8px"><label style="font-size:11px;font-weight:700;color:var(--osfv)">Tinkoff Secret Key</label><input class="fin" id="set-tinkoff_secret_key" type="password" placeholder="••••••" style="margin-top:4px"/></div>
+              <div style="font-size:11px;color:var(--osfv)">Получить: <a href="https://www.tinkoff.ru/business/openapi/voicekit-api" target="_blank" style="color:var(--md-sys-color-primary,var(--p))">cabinet.tinkoff.ru → VoiceKit</a></div>
             </div>
+
+            <div style="padding:10px;background:var(--md-sys-color-surface-container-low,var(--sfcl));border-radius:8px;margin-bottom:10px">
+              <div style="font-weight:700;font-size:12px;color:var(--md-sys-color-primary,var(--p));margin-bottom:6px"><span class="i" style="vertical-align:-3px;font-size:16px">record_voice_over</span> TTS — синтез ответов AI</div>
+              <div style="margin-bottom:8px"><label style="font-size:11px;font-weight:700;color:var(--osfv)">Провайдер</label>
+                <select class="fin" id="set-tts_provider" style="margin-top:4px">
+                  <option value="vsegpt">ВсеГПТ (OpenAI tts-1) — работает у всех</option>
+                  <option value="tinkoff">Tinkoff VoiceKit — только юр.лица</option>
+                </select>
+              </div>
+              <div style="margin-bottom:8px"><label style="font-size:11px;font-weight:700;color:var(--osfv)">Модель (для ВсеГПТ)</label>
+                <select class="fin" id="set-tts_model" style="margin-top:4px">
+                  <option value="tts-1">tts-1 (быстрее, ~0.4 ₽/1000 знаков)</option>
+                  <option value="tts-1-hd">tts-1-hd (HD-качество, дороже)</option>
+                </select>
+              </div>
+              <div style="margin-bottom:8px"><label style="font-size:11px;font-weight:700;color:var(--osfv)">Голос</label>
+                <select class="fin" id="set-tts_voice" style="margin-top:4px">
+                  <option value="alloy">Alloy (нейтральный, универсальный)</option>
+                  <option value="echo">Echo (мужской)</option>
+                  <option value="fable">Fable (мужской, рассказчик)</option>
+                  <option value="onyx">Onyx (глубокий мужской)</option>
+                  <option value="nova">Nova (женский, дружелюбный)</option>
+                  <option value="shimmer">Shimmer (женский, мягкий)</option>
+                </select>
+              </div>
+              <div style="margin-bottom:8px;font-size:11px;color:var(--osfv);border-top:1px dashed var(--md-sys-color-outline-variant,var(--olv));padding-top:8px"><strong>Если выбран Tinkoff:</strong> голос alyona / anna / dorofeev / maxim / alexander (но запросы будут падать с 403 без юр.лица — мы автоматически вернёмся на ВсеГПТ).</div>
+              <input type="hidden" id="set-tinkoff_voice" value="alyona"/>
+            </div>
+
             <div id="set-voicekit-status" style="font-size:12px;color:var(--osfv);min-height:14px;margin-bottom:6px"></div>
             <div style="display:flex;gap:7px;flex-wrap:wrap">
-              <button class="btn fill" onclick="vsbSettings.save(['tinkoff_api_key','tinkoff_secret_key','tinkoff_voice'], 'set-voicekit-status')"><span class="i">save</span>Сохранить</button>
+              <button class="btn fill" onclick="vsbSettings.save(['tinkoff_api_key','tinkoff_secret_key','tinkoff_voice','tts_provider','tts_model','tts_voice'], 'set-voicekit-status')"><span class="i">save</span>Сохранить</button>
               <button class="btn out" onclick="vsbAdmin.testVoiceKit && vsbAdmin.testVoiceKit()" title="Озвучить тестовую фразу"><span class="i">volume_up</span>Тест голоса</button>
             </div>
           </div>
@@ -8537,13 +8562,17 @@ function initAdminPanels(){
 
 
 <!-- VSB_PHASE34_UI_V1 -->
+<!-- VSB_PHASE34_UI_V2 -->
 <script id="vsb-phase34-ui">
 (function(){
   if(!window.vsbAdmin) return;
   window.vsbAdmin.testVoiceKit = async function(){
     var st = document.getElementById('set-voicekit-status');
-    var voice = (document.getElementById('set-tinkoff_voice')||{}).value || 'alyona';
-    if(st){ st.textContent = 'Запрос синтеза…'; st.style.color = 'var(--osfv)'; }
+    var provider = (document.getElementById('set-tts_provider')||{}).value || 'vsegpt';
+    var voice = provider === 'tinkoff'
+      ? ((document.getElementById('set-tinkoff_voice')||{}).value || 'alyona')
+      : ((document.getElementById('set-tts_voice')||{}).value || 'alloy');
+    if(st){ st.textContent = 'Запрос синтеза (' + provider + ', голос: ' + voice + ')…'; st.style.color = 'var(--osfv)'; }
     try{
       var r = await fetch('/api/smeta/voice/tts', {
         method: 'POST',
@@ -8551,8 +8580,8 @@ function initAdminPanels(){
         body: JSON.stringify({
           text: 'Здравствуйте! Это тест голоса ВСБ тридцать девять. Сейчас вы слышите голос, который будет отвечать клиентам по телефону.',
           voice: voice,
-          encoding: 'LINEAR16',
-          sample_rate: 16000,
+          encoding: 'MPEG_AUDIO',
+          sample_rate: 24000,
         }),
       });
       if(!r.ok){
